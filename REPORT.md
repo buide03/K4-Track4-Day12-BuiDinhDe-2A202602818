@@ -16,11 +16,11 @@
 
 | Bộ điều khiển | L2 vòng hở (m) | Va chạm vòng kín trên log (%) | Quyết định cổng |
 |---|---|---|---|
-| constant-velocity | | | |
-| IDM | | | (baseline) |
-| EgoMLP | | | |
-| PercMLP | | | |
-| PercMLP+ (sau khi sửa) | | | |
+| constant-velocity | 1,249 | 19,5 | CHẶN (R2, R3, R4, R6) |
+| IDM | 1,535 | 0,1 | (baseline) |
+| EgoMLP | 0,757 ± 0,005 | 12,7–24,6 | CHẶN (R2, R3, R4, R5, R6) |
+| PercMLP | 0,619 ± 0,003 | 0,4–0,9 | CHẶN (R2, R3, R4, R6) |
+| PercMLP+ (sau khi sửa) | 0,823 ± 0,015 | 0,2–0,2 | PHÁT HÀNH (qua 7/7) |
 
 ## Câu 1 · Dữ liệu
 Bước 0 bạn phát hiện những vấn đề gì ở dữ liệu? Vì sao không dùng cột `Acc_LV`, và bạn thay bằng gì? Bao nhiêu quỹ đạo bị loại vì trùng, và vì sao chia theo quỹ đạo?
@@ -96,9 +96,23 @@ Theo `evidence/agents.json`, người lái trong log giữ khoảng thời gian 
 ## Câu 7 · Cổng phát hành và sửa
 Quy tắc nào chặn PercMLP và nguyên nhân gốc là gì (dẫn số)? Bạn sửa bằng gì và vì sao nó chữa đúng nguyên nhân? Sau khi qua cổng, PercMLP+ có **tốt hơn** IDM không? Nó có nên được phát hành không, và bạn đề xuất làm gì trước khi quyết định?
 
-(trả lời ở đây)
+Theo `evidence/gate.json`, PercMLP bị **chặn** bởi 4 quy tắc (baseline IDM, seed xấu nhất), với hai nguyên nhân gốc khác nhau:
+- **Kịch bản mà log không chứa (R4, R6):** trên lưới cắt vào, vùng đâm tránh được là **12,3%**, so với 0,0% của IDM (ngưỡng +2 điểm). Với xe sau phản ứng là **17,5%**, so với 5,1%. Như câu 3: người lái trong log phanh mạnh nhất chỉ 3,62 m/s², và 614 ca phanh khai thác được không chạm vùng cắt vào gần, nhanh. Mạng chưa bao giờ thấy những trạng thái này.
+- **Sai số tích luỹ khi tự lái (R2, R3):** ngay trên log thật, PercMLP đâm 0,9% với cận trên **1,3%**, vượt ngưỡng 0,1 + 1 = 1,1%. Trên lát cắt xe dẫn phanh là 2,5% với cận trên **5,8%**, vượt ngưỡng 5,5%. Mạng chỉ học ở trạng thái người đã đi qua; khi tự lái, lệch nhỏ cộng dồn và đưa xe tới trạng thái nằm ngoài phân bố huấn luyện.
+
+**Cách sửa** (`fix.json`): (1) thêm cửa sổ từ **20.000** kịch bản cắt vào mô phỏng, có IDM làm mẫu, để chữa nguyên nhân thiếu kịch bản; (2) **DAgger 2 vòng**: model tự lái trên log train, ghi trạng thái nó đi vào, gắn nhãn bằng dự báo IDM ở đúng các trạng thái đó, để chữa sai số tích luỹ. Sau khi sửa, PercMLP+ qua **7/7** quy tắc: R2 0,2% (cận trên 0,4%), R3 0,5% (cận trên 2,8%), R4 **0,1%**, R5 0,2–0,2%, R6 **5,2%**. Mỗi cách sửa làm qua đúng các quy tắc ứng với nguyên nhân của nó.
+
+**PercMLP+ không tốt hơn IDM**, chỉ **không kém hơn trong biên cho phép**: IDM vẫn đâm 0,1% so với 0,2% trên log, 0,0% so với 0,1% trên lưới, 5,1% so với 5,2% với xe sau phản ứng. Nó học nhãn từ chính IDM nên trên những tình huống này không thể vượt thầy. Ở **20 m/s** (ngoài vùng huấn luyện, cổng không kiểm tra), PercMLP+ còn 0,9–1,6% vùng đâm tránh được, trong khi IDM là 0,0%. L2 vòng hở lại **tệ hơn**: 0,619 → 0,823 m, thêm một bằng chứng rằng L2 không đo an toàn.
+
+**Đề xuất:** chưa thay IDM. Qua cổng chỉ là điều kiện cần. PercMLP+ chưa mang lại lợi ích an toàn nào so với IDM, và còn kém ở tốc độ chưa thử. Trước khi quyết định, em sẽ: chạy shadow mode bên cạnh IDM để đo bất đồng trên dữ liệu thật; thêm vào cổng quy tắc kiểm tra ngoài vùng huấn luyện (ví dụ lưới 20 m/s); và chỉ cân nhắc phát hành nếu có lý do khác ngoài an toàn (ví dụ độ êm, thoải mái) được đo và chứng minh.
 
 ## Câu 8 · Bài lab này không chứng minh được gì
 Chọn **ít nhất ba** giới hạn quan trọng nhất đối với việc quyết định phát hành và giải thích vì sao mỗi cái làm kết luận của bạn kém chắc chắn. Điều gì cần làm tiếp để thu hẹp khoảng cách đến thế giới thật?
 
-(trả lời ở đây)
+1. **Thế giới mô phỏng là giả định của chính bài lab.** Bộ mô phỏng chỉ có một chiều dọc, xe cắt vào xuất hiện tức thời rồi giữ tốc độ, không có chuyển làn hay người đi bộ. Phép kiểm chứng "0 ô lệch" ở bước 2 chỉ chứng tỏ mô phỏng **khớp với công thức vật lý của chính nó**, không chứng tỏ nó khớp với đường thật. Xe sau phản ứng là IDM với T = 1,4 s (W1 = 0,34, so với 0,84 của xe không phản ứng): gần người hơn nhưng vẫn chỉ là một mô hình. Cổng cho PercMLP+ qua R6 với 5,2% so với 5,1% của IDM, mà con số này phụ thuộc trực tiếp vào giả định đó.
+2. **Không có cảm biến thật.** Mọi bộ điều khiển nhận khoảng cách và tốc độ xe trước gần như hoàn hảo; phép thử nhiễu chỉ là ±1 m và ±0,5 m/s ngẫu nhiên. Thực tế có mất dấu, nhận nhầm vật thể và trễ không đều. Ngay bước 1, phát theo thời gian thật đã cho 582 khung trễ và 579 khung rớt trên 59.806 khung, làm đổi lệnh ở 377/600 đoạn, nhưng phần vòng kín không mô phỏng hiệu ứng này.
+3. **Dữ liệu và vùng kiểm thử hẹp.** Log Argoverse 2 là giao thông đô thị chậm: người lái phanh mạnh nhất khoảng 3,62 m/s², và lưới chỉ chạy ở 10 m/s. Ở 20 m/s, tốc độ mà cổng không kiểm tra, PercMLP+ vẫn có 0,9–1,6% vùng đâm tránh được, trong khi IDM là 0. Qua cổng chỉ có nghĩa là "không kém hơn **trên những gì đã thử**".
+4. **Thống kê sự kiện hiếm.** Với 2.883 quỹ đạo, IDM đâm 0,1% có CI [0,0; 0,3]. Với cỡ mẫu này, cổng không thể phân biệt hai bộ điều khiển có tỷ lệ va chạm nhỏ hơn nhiều so với độ rộng của khoảng tin cậy, trong khi một hệ thống thật phải đạt tỷ lệ cực thấp như vậy. Trên lát cắt xe dẫn phanh chỉ có 197 quỹ đạo nên biên phải nới tới 5 điểm.
+5. **Baseline cũng là thầy.** PercMLP+ được gắn nhãn bằng chính IDM nên cổng đang so học trò với thầy. Cổng không trả lời được câu hỏi liệu IDM có đủ an toàn hay không.
+
+**Việc cần làm tiếp:** chạy PercMLP+ ở chế độ shadow mode (chạy song song nhưng không điều khiển) trên xe thật với cảm biến thật và đo tỷ lệ bất đồng với IDM; mở rộng lưới sang tốc độ cao, nhiều làn, nhiều tác nhân phản ứng; thêm quy tắc ngoài phân bố huấn luyện (ví dụ 20 m/s) vào cổng; dùng lấy mẫu sự kiện hiếm hoặc nhiều dữ liệu hơn để thu hẹp khoảng tin cậy; và kiểm chứng bộ mô phỏng bằng log va chạm hoặc suýt va chạm thật.
