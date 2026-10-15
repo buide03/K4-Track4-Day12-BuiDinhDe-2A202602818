@@ -8,7 +8,7 @@
 | MSSV (đúng bằng `--student-id` bạn đã chạy) | 202602818 |
 | GitHub | buide03 |
 | Seed chia dữ liệu / seed mô hình (xem `evidence/closedloop.json`, mục `student`) | 6007 / 206 |
-| Số seed huấn luyện bạn dùng (`--seeds`) | `<điền>` |
+| Số seed huấn luyện bạn dùng (`--seeds`) | 5 (seed mô hình 206–210) |
 
 ## Kết quả cuối
 
