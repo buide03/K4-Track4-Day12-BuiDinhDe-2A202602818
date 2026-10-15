@@ -43,7 +43,10 @@ Theo `evidence/replay.json` (600 đoạn), chạy lại cùng code cho 0 đoạn
 ## Câu 3 · Kịch bản
 Lưới của bạn (tốc độ cruise, giới hạn khoảng cách, số ô): bao nhiêu % ô **không ai tránh được**? Độ trễ phản ứng 0 → 0,6 s làm vùng đâm của IDM tăng bao nhiêu? Log có phủ vùng khó không? (dẫn giới hạn phanh mạnh nhất của người lái trong log, và phần lưới đòi hỏi hơn thế)
 
-(trả lời ở đây)
+Theo `evidence/scenarios.json`, lưới của em có tốc độ cruise **10 m/s**, khoảng cách lúc cắt vào **2,76–59,31 m** (p2–p98 của log), tốc độ tiến gần 0–10 m/s, tổng **60 × 45 = 2.700 ô**.
+- **Bất khả kháng:** biên tính bằng `gap < dv·t_react + dv²/(2·9)`, tức quãng mất trong thời gian phản ứng cộng quãng phanh hết cỡ. Biên này chiếm **1,0%** số ô khi trễ 0 s và **5,1%** khi trễ 0,6 s. Kiểm chứng: bộ "phanh hết cỡ" đâm đúng 1,0% / 5,1% ô, với **0 ô lệch** khỏi biên ở cả hai độ trễ. Vậy bộ mô phỏng và hàm `unavoidable` khớp nhau.
+- **Trễ 0 → 0,6 s:** vùng đâm của IDM tăng từ **1,0% lên 5,1%** (khoảng 5 lần). Nhưng vùng do lỗi của IDM (`attributable_area`) vẫn là **0** ở cả hai mức: IDM chỉ đâm ở những ô không ai tránh được (đường đỏ trùng đường cyan trong `scenarios_idm.png`). Nếu không có biên này, ta sẽ nhầm rằng IDM kém đi. Ngược lại, constant-velocity đâm **73,4%** ô, trong đó 72,4% (trễ 0 s) và 68,2% (trễ 0,6 s) là lỗi của chính nó.
+- **Độ phủ của log:** đào được **614** sự kiện xe dẫn phanh (6,4% quỹ đạo), với đỉnh phanh trung vị −2,53 m/s² và p99 −4,21 m/s². Người lái trong log phanh mạnh nhất khoảng **3,62 m/s²** (p99,9), trong khi xe phanh được 9 m/s², và **5,2%** số ô của lưới đòi phanh mạnh hơn mức đó. Các chấm trắng (sự kiện khai thác) dồn ở vùng tốc độ tiến gần thấp, không chạm vùng sát biên bất khả kháng. Log **không phủ** vùng khó, nên model học từ log chưa từng thấy những tình huống này. Muốn kiểm thử vùng đó phải dùng kịch bản tổng hợp.
 
 ## Câu 4 · Vòng hở và vòng kín
 Dán bảng L2 và tỷ lệ va chạm của bốn bộ điều khiển (kèm hạng ở mỗi cách chấm). Cặp nào đổi thứ tự? Vì sao IDM có L2 như vậy mà vẫn lái tốt? Vì sao EgoMLP có L2 tốt hơn constant-velocity mà vẫn đâm?
