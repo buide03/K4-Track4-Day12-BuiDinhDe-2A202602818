@@ -4,10 +4,10 @@
 
 | | |
 |---|---|
-| Họ và tên | `<điền>` |
-| MSSV (đúng bằng `--student-id` bạn đã chạy) | `<điền>` |
-| GitHub | `<điền: tên tài khoản>` |
-| Seed chia dữ liệu / seed mô hình (xem `evidence/closedloop.json`, mục `student`) | `<điền>` |
+| Họ và tên | Bùi Đình Đề |
+| MSSV (đúng bằng `--student-id` bạn đã chạy) | 202602818 |
+| GitHub | buide03 |
+| Seed chia dữ liệu / seed mô hình (xem `evidence/closedloop.json`, mục `student`) | 6007 / 206 |
 | Số seed huấn luyện bạn dùng (`--seeds`) | `<điền>` |
 
 ## Kết quả cuối
