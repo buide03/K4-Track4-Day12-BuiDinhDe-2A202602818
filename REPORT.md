@@ -81,7 +81,17 @@ Theo `evidence/closedloop.json`, cùng dữ liệu và cùng code, chỉ khác s
 ## Câu 6 · Tác nhân phản ứng
 Dán bảng "xe sau phát lại" và "xe sau phản ứng". `T` bạn hiệu chỉnh là bao nhiêu, xe sau chân thực đến mức nào so với xe không phản ứng? Vì sao IDM bị tính "va chạm giả" khi xe sau chỉ phát lại, và điều này làm đổi kết luận về bộ điều khiển ra sao?
 
-(trả lời ở đây)
+Theo `evidence/agents.json`, người lái trong log giữ khoảng thời gian trung vị **1,85 s**. Em thử IDM với T từ 0,6 đến 2,4 s và chọn **T = 1,4 s**, vì cho khoảng cách Wasserstein tới phân bố khoảng thời gian của người nhỏ nhất (**W1 = 0,34**). Một xe không bao giờ phản ứng cho **W1 = 0,84**, kém gần 2,5 lần, nên xe sau phản ứng đã hiệu chỉnh chân thực hơn hẳn xe chỉ phát lại. Xe sau đặt cách xe ta 16 m, phản ứng trễ 0,6 s. Tỷ lệ ô của lưới cắt vào có va chạm bất kỳ (phía sau trong ngoặc):
+
+| Bộ điều khiển | Trễ 0 s: phát lại | Trễ 0 s: phản ứng | Trễ 0,6 s: phát lại | Trễ 0,6 s: phản ứng |
+|---|---|---|---|---|
+| const-vel | 73,4% (sau 0,0%) | 73,4% | 73,4% (sau 0,0%) | 73,4% |
+| IDM | 69,6% (sau 68,6%) | 1,0% | 70,1% (sau 64,9%) | 5,1% |
+| EgoMLP | 69,7% (sau 0,0%) | 69,7% | 70,6% (sau 0,0%) | 70,6% |
+| PercMLP | 83,9% (sau 75,9%) | 9,4% | 82,5% (sau 65,5%) | 17,5% |
+
+- **Va chạm giả:** khi có xe cắt vào, IDM phanh đúng. Nhưng xe sau phát lại cứ giữ tốc độ trong log, không biết xe ta đã phanh, nên tông vào đuôi. Kết quả là 68,6% ô bị tính va chạm phía sau. Người lái thật sẽ phanh theo: với xe sau phản ứng, va chạm phía sau về **0,0%**, và IDM chỉ còn 1,0% / 5,1%, đúng bằng vùng bất khả kháng ở câu 3.
+- **Kết luận bị đổi:** trong thế giới phát lại, IDM (69,6%) trông ngang EgoMLP (69,7%) và chỉ hơn const-vel một chút. Hai bộ này không bao giờ phanh nên không bao giờ bị tông đuôi. Thế giới phát lại **phạt việc phanh đúng và thưởng việc không phản ứng**. Khi các tác nhân biết phản ứng, IDM tốt hơn rõ rệt, còn PercMLP (9,4% / 17,5%) vẫn kém IDM ở phía trước. Vì vậy cổng phát hành phải dùng số với xe sau phản ứng.
 
 ## Câu 7 · Cổng phát hành và sửa
 Quy tắc nào chặn PercMLP và nguyên nhân gốc là gì (dẫn số)? Bạn sửa bằng gì và vì sao nó chữa đúng nguyên nhân? Sau khi qua cổng, PercMLP+ có **tốt hơn** IDM không? Nó có nên được phát hành không, và bạn đề xuất làm gì trước khi quyết định?
